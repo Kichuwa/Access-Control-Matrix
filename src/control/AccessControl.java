@@ -1,8 +1,14 @@
-package homework2;
+package control;
 
 import java.io.FileReader; 
 import java.util.Arrays;
 import java.util.Scanner;
+
+	/*
+	 * Darren Soulier
+	 * APC420
+	 * 6/7/2021
+	 */
 
 /*
  * Load an access control matrix from a file
@@ -23,19 +29,56 @@ public class AccessControl {
 	String[] subjects, objects; 
 	static String[][] matrix; // 'r', 'w', or 'rw'
 	
+	static int subject, object;
+	static String operation;
+
+	//for reviewing matrices
+	public static void print2D(String[][] matrix2)
+    {
+        // Loop through all rows
+        for (String[] row : matrix2)
+ 
+            // converting each row as string
+            // and then printing in a separate line
+            System.out.println(Arrays.toString(row));
+    }
+	
+	//For finding index of subject
+	public int findSubject(String subject){
+		int i = 0;
+		while(subjects[i] != null && !subjects[i].equals(subject)) {
+			i++;
+		}
+		if(subject == null) 
+			return -1;
+		else
+			return i;
+	}
+	//For finding index of object
+	public int findObject(String object){
+		int i = 0;
+		while(objects[i] != null && !objects[i].equals(object)) {
+			i++;
+		}
+		if(object == null) 
+			return -1;
+		else
+			return i;
+	}
+	
 
 	// load access control matrix from a file by the name of "fileName"
 	void load(String fileName) {
 		try {
 			Scanner in = new Scanner(new FileReader(fileName));
 			
-			subjects = in.nextLine().split(",\\s");
-			objects = in.nextLine().split(",\\s");
+			subjects = in.nextLine().split(",\\s*");
+			objects = in.nextLine().split(",\\s*");
 			matrix = new String[subjects.length][objects.length];
 			
 			int i = 0;
 			while(i < subjects.length && in.hasNextLine()) {
-				matrix[i] = in.nextLine().split(",\\s");
+				matrix[i] = in.nextLine().split(",\\s*");
 				i += 1;
 				
 			}
@@ -50,14 +93,13 @@ public class AccessControl {
 	
 	public String toString() {
 	       //format matrix
-	       String lineSeparator = System.lineSeparator(); //return matrix string in separate lines
 	       StringBuilder matrixLayout = new StringBuilder();
 	       matrixLayout.append("\t");
 	       
 	       for (int i = 0; i < objects.length; i++) {
 	           String object = objects[i]; 
 	          
-	           matrixLayout.append(object + " "); //add objects to matrix
+	           matrixLayout.append(object + "  "); //add objects to matrix
 	       }
 	      
 	       matrixLayout.append("\n");
@@ -65,56 +107,39 @@ public class AccessControl {
 	       for (int i = 0; i < subjects.length; i++) {
 	           String subj = subjects[i]; 
 	           
-	          
 	           matrixLayout.append(subj +"\t"); //add subjects to matrix 
-	           //Test Zone
-	           
-	           for(int j = 0; j < matrix.length; j++) {
-	        	   for(int k = 0; k < matrix[j].length; k++) {
-	        		   String matr = matrix[j][k];
-	        		   matrixLayout.append(matr);
-		           }
+	           for(int k = 0; k < matrix[i].length; k++) {
+        		   matrixLayout.append(matrix[i][k] + "\t    ");
 	           }
-	           matrixLayout.append("\n");
-	           
+	                      
+           matrixLayout.append("\n");   
+           
 	       }
-	       for (String[] row : matrix) { //break matrix array into rows  
-	       matrixLayout.append(Arrays.toString(row).indent(8)).append(lineSeparator);
-	       }
+           
+	       //Test Zone
+		//print2D(matrix);
+	       
 	   return matrixLayout.toString();
 	   }
 	
 	
 	boolean check(String subj, String op, String obj) {
-		// TODO
-		boolean subjCheck = false, opCheck = false, objCheck = false;
-		int subjFound, objectFound;
+		try {
+			int subject = findSubject(subj);
+			int object = findObject(obj);
+			AccessControl.operation = op;
 		
-		for(int i = 0; i < subjects.length; i++) {
-			if(subjects[i] == subj) {
-				subjCheck = true;
-				
+			if(matrix[subject][object].contains("r") 
+				&& AccessControl.operation.contains("r")) {
+				return true;
+			} else if	(matrix[subject][object].contains("w") 
+						&& AccessControl.operation.contains("w")) {
+				return true;
 			}
 		}
-		
-		for(int i = 0; i < objects.length; i++) {
-			if(objects[i] == obj) {
-				objCheck = true;
-			}
+		catch(ArrayIndexOutOfBoundsException e) {
+			return false;
 		}
-		
-		for(int row = 0; row < matrix.length; row++) {
-			for(int col = 0; col < matrix[row].length; col++) {
-				if(matrix[row][col] == op) {
-					opCheck = true;
-				}
-			}
-		}
-		
-		if(subjCheck == true|| opCheck == true == objCheck == true) {
-			return true;
-		}
-		
 		return false;
 	}
 
